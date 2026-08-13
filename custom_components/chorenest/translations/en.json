@@ -1,0 +1,173 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ChoreNest",
+        "description": "Choose your language to continue.",
+        "data": { "language": "Language" }
+      },
+      "children": {
+        "title": "Children",
+        "description": "{intro}",
+        "data": {
+          "children": "Names (comma-separated)",
+          "different_schedules": "Individual schedules (e.g. co-parenting)"
+        }
+      },
+      "child_pattern": {
+        "title": "{child} ({n} of {total})",
+        "description": "Pick a colour and a presence pattern for {child}.",
+        "data": { "color": "Colour", "pattern": "Presence pattern" }
+      },
+      "child_details": {
+        "title": "{child} ({n} of {total}) — details",
+        "description": "{help}",
+        "data": {
+          "start_date": "Start date (YYYY-MM-DD)",
+          "start_present": "Present in the start week",
+          "day_monday": "Monday", "day_tuesday": "Tuesday", "day_wednesday": "Wednesday",
+          "day_thursday": "Thursday", "day_friday": "Friday", "day_saturday": "Saturday", "day_sunday": "Sunday",
+          "week_1": "1st week of the month", "week_2": "2nd week", "week_3": "3rd week",
+          "week_4": "4th week", "week_last": "Last week of the month",
+          "blocked_monday": "Monday — no time for tasks", "blocked_tuesday": "Tuesday — no time",
+          "blocked_wednesday": "Wednesday — no time", "blocked_thursday": "Thursday — no time",
+          "blocked_friday": "Friday — no time", "blocked_saturday": "Saturday — no time",
+          "blocked_sunday": "Sunday — no time"
+        }
+      },
+      "finish": {
+        "title": "Basic setup complete",
+        "description": "{desc}"
+      }
+    },
+    "error": {
+      "min_one_child": "Enter at least one name.",
+      "max_children": "Maximum 8 children."
+    },
+    "abort": { "already_configured": "ChoreNest is already configured." }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "What would you like to change?",
+        "menu_options": {
+          "children": "👨‍👩‍👧 Children",
+          "tasks_rotation": "🔄 Daily rotating tasks",
+          "tasks_week": "📅 Weekly tasks",
+          "tasks_month": "🗓️ Monthly tasks",
+          "language": "🌐 Language"
+        }
+      },
+      "language": {
+        "title": "Language",
+        "data": { "language": "Language" }
+      },
+      "children": {
+        "title": "Children",
+        "menu_options": {
+          "child_add": "➕ Add a child",
+          "child_edit": "✏️ Edit or remove a child",
+          "init": "‹ Back"
+        }
+      },
+      "child_add": {
+        "title": "Add a child",
+        "data": { "name": "Name" }
+      },
+      "child_edit": {
+        "title": "Which child?",
+        "data": { "child": "Child" }
+      },
+      "child_pattern": {
+        "title": "{child}",
+        "description": "Pick a colour and a presence pattern for {child}.",
+        "data": { "color": "Colour", "pattern": "Presence pattern" }
+      },
+      "child_details": {
+        "title": "{child} — details",
+        "description": "{help}",
+        "data": {
+          "start_date": "Start date (YYYY-MM-DD)",
+          "start_present": "Present in the start week",
+          "day_monday": "Monday", "day_tuesday": "Tuesday", "day_wednesday": "Wednesday",
+          "day_thursday": "Thursday", "day_friday": "Friday", "day_saturday": "Saturday", "day_sunday": "Sunday",
+          "week_1": "1st week of the month", "week_2": "2nd week", "week_3": "3rd week",
+          "week_4": "4th week", "week_last": "Last week of the month",
+          "blocked_monday": "Monday — no time for tasks", "blocked_tuesday": "Tuesday — no time",
+          "blocked_wednesday": "Wednesday — no time", "blocked_thursday": "Thursday — no time",
+          "blocked_friday": "Friday — no time", "blocked_saturday": "Saturday — no time",
+          "blocked_sunday": "Sunday — no time",
+          "remove_child": "🗑️ Remove this child"
+        }
+      },
+      "tasks_rotation": {
+        "title": "Daily rotating tasks",
+        "menu_options": {
+          "task_rotation_add": "➕ Add a task",
+          "task_rotation_pick": "✏️ Edit or remove a task",
+          "init": "‹ Back"
+        }
+      },
+      "task_rotation_pick": {
+        "title": "Which task?",
+        "data": { "task": "Task" }
+      },
+      "task_rotation_form": {
+        "title": "Rotating task",
+        "description": "{help}",
+        "data": {
+          "name": "Task name",
+          "fixed_child": "Always assign to (leave on automatic to rotate)",
+          "remove": "🗑️ Remove this task"
+        }
+      },
+      "tasks_week": {
+        "title": "Weekly tasks",
+        "menu_options": {
+          "task_week_add": "➕ Add a task",
+          "task_week_pick": "✏️ Edit or remove a task",
+          "init": "‹ Back"
+        }
+      },
+      "task_week_pick": {
+        "title": "Which task?",
+        "data": { "task": "Task" }
+      },
+      "task_week_form": {
+        "title": "Weekly task",
+        "description": "{help}",
+        "data": {
+          "name": "Task name",
+          "day": "Day",
+          "mode": "Distribution",
+          "fixed_child": "Fixed child (used when distribution = always the same child)",
+          "even_child": "Even-week child (used for even/odd distribution)",
+          "odd_child": "Odd-week child (used for even/odd distribution)",
+          "remove": "🗑️ Remove this task"
+        }
+      },
+      "tasks_month": {
+        "title": "Monthly tasks",
+        "menu_options": {
+          "task_month_add": "➕ Add a task",
+          "task_month_pick": "✏️ Edit or remove a task",
+          "init": "‹ Back"
+        }
+      },
+      "task_month_pick": {
+        "title": "Which task?",
+        "data": { "task": "Task" }
+      },
+      "task_month_form": {
+        "title": "Monthly task",
+        "description": "{help}",
+        "data": {
+          "name": "Task name",
+          "week_of_month": "Week of the month",
+          "day_of_week": "Day",
+          "remove": "🗑️ Remove this task"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,173 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ChoreNest",
+        "description": "Wähle die Sprache, um fortzufahren.",
+        "data": { "language": "Sprache" }
+      },
+      "children": {
+        "title": "Kinder",
+        "description": "{intro}",
+        "data": {
+          "children": "Namen (durch Komma getrennt)",
+          "different_schedules": "Individuelle Zeitpläne (z. B. Co-Elternschaft)"
+        }
+      },
+      "child_pattern": {
+        "title": "{child} ({n} von {total})",
+        "description": "Wähle eine Farbe und ein Anwesenheitsmuster für {child}.",
+        "data": { "color": "Farbe", "pattern": "Anwesenheitsmuster" }
+      },
+      "child_details": {
+        "title": "{child} ({n} von {total}) — Details",
+        "description": "{help}",
+        "data": {
+          "start_date": "Startdatum (JJJJ-MM-TT)",
+          "start_present": "Anwesend in der Startwoche",
+          "day_monday": "Montag", "day_tuesday": "Dienstag", "day_wednesday": "Mittwoch",
+          "day_thursday": "Donnerstag", "day_friday": "Freitag", "day_saturday": "Samstag", "day_sunday": "Sonntag",
+          "week_1": "1. Woche des Monats", "week_2": "2. Woche", "week_3": "3. Woche",
+          "week_4": "4. Woche", "week_last": "Letzte Woche des Monats",
+          "blocked_monday": "Montag — keine Zeit für Aufgaben", "blocked_tuesday": "Dienstag — keine Zeit",
+          "blocked_wednesday": "Mittwoch — keine Zeit", "blocked_thursday": "Donnerstag — keine Zeit",
+          "blocked_friday": "Freitag — keine Zeit", "blocked_saturday": "Samstag — keine Zeit",
+          "blocked_sunday": "Sonntag — keine Zeit"
+        }
+      },
+      "finish": {
+        "title": "Grundeinrichtung abgeschlossen",
+        "description": "{desc}"
+      }
+    },
+    "error": {
+      "min_one_child": "Gib mindestens einen Namen ein.",
+      "max_children": "Maximal 8 Kinder."
+    },
+    "abort": { "already_configured": "ChoreNest ist bereits eingerichtet." }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Was möchtest du ändern?",
+        "menu_options": {
+          "children": "👨‍👩‍👧 Kinder",
+          "tasks_rotation": "🔄 Tägliche Rotationsaufgaben",
+          "tasks_week": "📅 Wöchentliche Aufgaben",
+          "tasks_month": "🗓️ Monatliche Aufgaben",
+          "language": "🌐 Sprache"
+        }
+      },
+      "language": {
+        "title": "Sprache",
+        "data": { "language": "Sprache" }
+      },
+      "children": {
+        "title": "Kinder",
+        "menu_options": {
+          "child_add": "➕ Kind hinzufügen",
+          "child_edit": "✏️ Kind bearbeiten oder entfernen",
+          "init": "‹ Zurück"
+        }
+      },
+      "child_add": {
+        "title": "Kind hinzufügen",
+        "data": { "name": "Name" }
+      },
+      "child_edit": {
+        "title": "Welches Kind?",
+        "data": { "child": "Kind" }
+      },
+      "child_pattern": {
+        "title": "{child}",
+        "description": "Wähle eine Farbe und ein Anwesenheitsmuster für {child}.",
+        "data": { "color": "Farbe", "pattern": "Anwesenheitsmuster" }
+      },
+      "child_details": {
+        "title": "{child} — Details",
+        "description": "{help}",
+        "data": {
+          "start_date": "Startdatum (JJJJ-MM-TT)",
+          "start_present": "Anwesend in der Startwoche",
+          "day_monday": "Montag", "day_tuesday": "Dienstag", "day_wednesday": "Mittwoch",
+          "day_thursday": "Donnerstag", "day_friday": "Freitag", "day_saturday": "Samstag", "day_sunday": "Sonntag",
+          "week_1": "1. Woche des Monats", "week_2": "2. Woche", "week_3": "3. Woche",
+          "week_4": "4. Woche", "week_last": "Letzte Woche des Monats",
+          "blocked_monday": "Montag — keine Zeit für Aufgaben", "blocked_tuesday": "Dienstag — keine Zeit",
+          "blocked_wednesday": "Mittwoch — keine Zeit", "blocked_thursday": "Donnerstag — keine Zeit",
+          "blocked_friday": "Freitag — keine Zeit", "blocked_saturday": "Samstag — keine Zeit",
+          "blocked_sunday": "Sonntag — keine Zeit",
+          "remove_child": "🗑️ Dieses Kind entfernen"
+        }
+      },
+      "tasks_rotation": {
+        "title": "Tägliche Rotationsaufgaben",
+        "menu_options": {
+          "task_rotation_add": "➕ Aufgabe hinzufügen",
+          "task_rotation_pick": "✏️ Aufgabe bearbeiten oder entfernen",
+          "init": "‹ Zurück"
+        }
+      },
+      "task_rotation_pick": {
+        "title": "Welche Aufgabe?",
+        "data": { "task": "Aufgabe" }
+      },
+      "task_rotation_form": {
+        "title": "Rotationsaufgabe",
+        "description": "{help}",
+        "data": {
+          "name": "Name der Aufgabe",
+          "fixed_child": "Immer zuweisen an (auf automatisch lassen, um zu rotieren)",
+          "remove": "🗑️ Diese Aufgabe entfernen"
+        }
+      },
+      "tasks_week": {
+        "title": "Wöchentliche Aufgaben",
+        "menu_options": {
+          "task_week_add": "➕ Aufgabe hinzufügen",
+          "task_week_pick": "✏️ Aufgabe bearbeiten oder entfernen",
+          "init": "‹ Zurück"
+        }
+      },
+      "task_week_pick": {
+        "title": "Welche Aufgabe?",
+        "data": { "task": "Aufgabe" }
+      },
+      "task_week_form": {
+        "title": "Wöchentliche Aufgabe",
+        "description": "{help}",
+        "data": {
+          "name": "Name der Aufgabe",
+          "day": "Tag",
+          "mode": "Verteilung",
+          "fixed_child": "Festes Kind (bei Verteilung = immer dasselbe Kind)",
+          "even_child": "Kind in geraden Wochen (bei gerade/ungerade Verteilung)",
+          "odd_child": "Kind in ungeraden Wochen (bei gerade/ungerade Verteilung)",
+          "remove": "🗑️ Diese Aufgabe entfernen"
+        }
+      },
+      "tasks_month": {
+        "title": "Monatliche Aufgaben",
+        "menu_options": {
+          "task_month_add": "➕ Aufgabe hinzufügen",
+          "task_month_pick": "✏️ Aufgabe bearbeiten oder entfernen",
+          "init": "‹ Zurück"
+        }
+      },
+      "task_month_pick": {
+        "title": "Welche Aufgabe?",
+        "data": { "task": "Aufgabe" }
+      },
+      "task_month_form": {
+        "title": "Monatliche Aufgabe",
+        "description": "{help}",
+        "data": {
+          "name": "Name der Aufgabe",
+          "week_of_month": "Woche des Monats",
+          "day_of_week": "Tag",
+          "remove": "🗑️ Diese Aufgabe entfernen"
+        }
+      }
+    }
+  }
+}

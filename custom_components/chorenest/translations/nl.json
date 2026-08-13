@@ -1,0 +1,173 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ChoreNest",
+        "description": "Kies de taal om verder te gaan.",
+        "data": { "language": "Taal" }
+      },
+      "children": {
+        "title": "Kinderen",
+        "description": "{intro}",
+        "data": {
+          "children": "Namen (komma-gescheiden)",
+          "different_schedules": "Individuele schema's (bijv. co-ouderschap)"
+        }
+      },
+      "child_pattern": {
+        "title": "{child} ({n} van {total})",
+        "description": "Kies een kleur en een aanwezigheidspatroon voor {child}.",
+        "data": { "color": "Kleur", "pattern": "Aanwezigheidspatroon" }
+      },
+      "child_details": {
+        "title": "{child} ({n} van {total}) — details",
+        "description": "{help}",
+        "data": {
+          "start_date": "Startdatum (JJJJ-MM-DD)",
+          "start_present": "Aanwezig in de startweek",
+          "day_monday": "Maandag", "day_tuesday": "Dinsdag", "day_wednesday": "Woensdag",
+          "day_thursday": "Donderdag", "day_friday": "Vrijdag", "day_saturday": "Zaterdag", "day_sunday": "Zondag",
+          "week_1": "1e week van de maand", "week_2": "2e week", "week_3": "3e week",
+          "week_4": "4e week", "week_last": "Laatste week van de maand",
+          "blocked_monday": "Maandag — geen tijd voor taken", "blocked_tuesday": "Dinsdag — geen tijd",
+          "blocked_wednesday": "Woensdag — geen tijd", "blocked_thursday": "Donderdag — geen tijd",
+          "blocked_friday": "Vrijdag — geen tijd", "blocked_saturday": "Zaterdag — geen tijd",
+          "blocked_sunday": "Zondag — geen tijd"
+        }
+      },
+      "finish": {
+        "title": "Basisinstellingen klaar",
+        "description": "{desc}"
+      }
+    },
+    "error": {
+      "min_one_child": "Voer minimaal één naam in.",
+      "max_children": "Maximaal 8 kinderen."
+    },
+    "abort": { "already_configured": "ChoreNest is al geconfigureerd." }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Wat wil je aanpassen?",
+        "menu_options": {
+          "children": "👨‍👩‍👧 Kinderen",
+          "tasks_rotation": "🔄 Dagelijkse rotatietaken",
+          "tasks_week": "📅 Wekelijkse taken",
+          "tasks_month": "🗓️ Maandtaken",
+          "language": "🌐 Taal"
+        }
+      },
+      "language": {
+        "title": "Taal",
+        "data": { "language": "Taal" }
+      },
+      "children": {
+        "title": "Kinderen",
+        "menu_options": {
+          "child_add": "➕ Kind toevoegen",
+          "child_edit": "✏️ Kind bewerken of verwijderen",
+          "init": "‹ Terug"
+        }
+      },
+      "child_add": {
+        "title": "Kind toevoegen",
+        "data": { "name": "Naam" }
+      },
+      "child_edit": {
+        "title": "Welk kind?",
+        "data": { "child": "Kind" }
+      },
+      "child_pattern": {
+        "title": "{child}",
+        "description": "Kies een kleur en een aanwezigheidspatroon voor {child}.",
+        "data": { "color": "Kleur", "pattern": "Aanwezigheidspatroon" }
+      },
+      "child_details": {
+        "title": "{child} — details",
+        "description": "{help}",
+        "data": {
+          "start_date": "Startdatum (JJJJ-MM-DD)",
+          "start_present": "Aanwezig in de startweek",
+          "day_monday": "Maandag", "day_tuesday": "Dinsdag", "day_wednesday": "Woensdag",
+          "day_thursday": "Donderdag", "day_friday": "Vrijdag", "day_saturday": "Zaterdag", "day_sunday": "Zondag",
+          "week_1": "1e week van de maand", "week_2": "2e week", "week_3": "3e week",
+          "week_4": "4e week", "week_last": "Laatste week van de maand",
+          "blocked_monday": "Maandag — geen tijd voor taken", "blocked_tuesday": "Dinsdag — geen tijd",
+          "blocked_wednesday": "Woensdag — geen tijd", "blocked_thursday": "Donderdag — geen tijd",
+          "blocked_friday": "Vrijdag — geen tijd", "blocked_saturday": "Zaterdag — geen tijd",
+          "blocked_sunday": "Zondag — geen tijd",
+          "remove_child": "🗑️ Dit kind verwijderen"
+        }
+      },
+      "tasks_rotation": {
+        "title": "Dagelijkse rotatietaken",
+        "menu_options": {
+          "task_rotation_add": "➕ Taak toevoegen",
+          "task_rotation_pick": "✏️ Taak bewerken of verwijderen",
+          "init": "‹ Terug"
+        }
+      },
+      "task_rotation_pick": {
+        "title": "Welke taak?",
+        "data": { "task": "Taak" }
+      },
+      "task_rotation_form": {
+        "title": "Rotatietaak",
+        "description": "{help}",
+        "data": {
+          "name": "Naam van de taak",
+          "fixed_child": "Altijd toewijzen aan (laat op automatisch staan om te roteren)",
+          "remove": "🗑️ Deze taak verwijderen"
+        }
+      },
+      "tasks_week": {
+        "title": "Wekelijkse taken",
+        "menu_options": {
+          "task_week_add": "➕ Taak toevoegen",
+          "task_week_pick": "✏️ Taak bewerken of verwijderen",
+          "init": "‹ Terug"
+        }
+      },
+      "task_week_pick": {
+        "title": "Welke taak?",
+        "data": { "task": "Taak" }
+      },
+      "task_week_form": {
+        "title": "Wekelijkse taak",
+        "description": "{help}",
+        "data": {
+          "name": "Naam van de taak",
+          "day": "Dag",
+          "mode": "Verdeling",
+          "fixed_child": "Vast kind (bij verdeling = altijd hetzelfde kind)",
+          "even_child": "Kind in even weken (bij even/oneven verdeling)",
+          "odd_child": "Kind in oneven weken (bij even/oneven verdeling)",
+          "remove": "🗑️ Deze taak verwijderen"
+        }
+      },
+      "tasks_month": {
+        "title": "Maandtaken",
+        "menu_options": {
+          "task_month_add": "➕ Taak toevoegen",
+          "task_month_pick": "✏️ Taak bewerken of verwijderen",
+          "init": "‹ Terug"
+        }
+      },
+      "task_month_pick": {
+        "title": "Welke taak?",
+        "data": { "task": "Taak" }
+      },
+      "task_month_form": {
+        "title": "Maandtaak",
+        "description": "{help}",
+        "data": {
+          "name": "Naam van de taak",
+          "week_of_month": "Week van de maand",
+          "day_of_week": "Dag",
+          "remove": "🗑️ Deze taak verwijderen"
+        }
+      }
+    }
+  }
+}

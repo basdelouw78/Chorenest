@@ -1,0 +1,58 @@
+mark_done:
+  name: Toggle task done
+  description: Toggles a task as done/not done.
+  fields:
+    key:
+      name: Task key
+      description: Internal task key (from sensor attributes).
+      required: false
+      example: "rot__2025-01-06__Emma__Load dishwasher"
+      selector:
+        text:
+    child:
+      name: Child
+      description: Child's name (alternative to key).
+      required: false
+      selector:
+        text:
+    task:
+      name: Task
+      description: Task name.
+      required: false
+      selector:
+        text:
+
+reset_week:
+  name: Reset week
+  description: Marks all completed weekly tasks as not done (monthly tasks are kept).
+
+reset_all:
+  name: Reset all
+  description: Marks ALL completed tasks as not done.
+
+set_presence:
+  name: Set presence
+  description: Manually override presence for a child. Use present=null to reset.
+  fields:
+    child:
+      name: Child
+      description: Child's name.
+      required: true
+      selector:
+        text:
+    present:
+      name: Present
+      description: "true = present, false = not present, null/omit = automatic (reset override)"
+      required: false
+      selector:
+        boolean:
+
+clear_presence_override:
+  name: Clear presence override
+  description: Resets the manual presence override — the configured pattern is used again.
+  fields:
+    child:
+      name: Child
+      required: true
+      selector:
+        text:
