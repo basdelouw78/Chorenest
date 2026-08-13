@@ -40,7 +40,7 @@ def _done(hass, entry):
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
-    children = entry.data.get(CONF_CHILDREN, [])
+    children = _cfg(hass, entry).get(CONF_CHILDREN, [])
     entities = [ChoreNestDashboardSensor(hass, entry)]
     for child in children:
         entities.append(ChoreNestChildSensor(hass, entry, child))

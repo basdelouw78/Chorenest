@@ -487,7 +487,10 @@ class ChoreNestOptionsFlow(config_entries.OptionsFlow):
 
     def __init__(self, entry):
         self._entry = entry
-        d = entry.data
+        # Merge initial data with any previously-saved options so reopening
+        # "Configure" (and the runtime sensors) always see the latest state —
+        # options-flow saves are written to entry.options, not entry.data.
+        d = {**entry.data, **entry.options}
         self._lang = d.get(CONF_LANG, DEFAULT_LANG)
         self._children = list(d.get(CONF_CHILDREN, []))
         self._child_colors = dict(d.get(CONF_CHILD_COLORS, {}))

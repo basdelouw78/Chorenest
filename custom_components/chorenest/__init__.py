@@ -16,7 +16,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     store = Store(hass, STORAGE_VERSION, STORAGE_KEY)
     stored = await store.async_load() or {}
     hass.data[DOMAIN][entry.entry_id] = {
-        "config": dict(entry.data),
+        "config": {**entry.data, **entry.options},
         "done": stored,
         "store": store,
     }
@@ -64,7 +64,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             pres[child]["override_present"] = present
             config[CONF_CHILD_PRESENCE] = pres
             hass.data[DOMAIN][entry.entry_id]["config"] = config
-            hass.config_entries.async_update_entry(entry, data=config)
+            hass.config_entries.async_update_entry(entry, options=config)
             hass.bus.async_fire(f"{DOMAIN}_updated")
 
     async def handle_clear_presence_override(call):
@@ -76,7 +76,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             pres[child]["override_present"] = None
             config[CONF_CHILD_PRESENCE] = pres
             hass.data[DOMAIN][entry.entry_id]["config"] = config
-            hass.config_entries.async_update_entry(entry, data=config)
+            hass.config_entries.async_update_entry(entry, options=config)
             hass.bus.async_fire(f"{DOMAIN}_updated")
 
     hass.services.async_register(DOMAIN, "mark_done", handle_mark_done)
