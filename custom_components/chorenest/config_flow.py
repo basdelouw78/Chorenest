@@ -294,28 +294,37 @@ def needs_details_step(mode) -> bool:
 
 def build_task_rotation_schema(children, cur, lang):
     t = _t(lang)
+    participants_default = cur.get("children_order") or children
     fields = {
         vol.Required("name", default=cur.get("name", "")): str,
+        vol.Optional("participants", default=participants_default): _select(
+            _child_choices(children, lang, include_auto=False), multiple=True
+        ),
         vol.Optional("fixed_child", default=cur.get("fixed_child") or ""): _select(_child_choices(children, lang)),
     }
     return vol.Schema(fields)
 
 
 def parse_task_rotation(ui, children):
+    participants = ui.get("participants") or children
     return {
         "name": ui["name"].strip(),
         "fixed_child": ui.get("fixed_child") or None,
-        "children_order": children,
+        "children_order": participants,
     }
 
 
 def build_task_week_schema(children, cur, lang):
     t = _t(lang)
     ch_choices = _child_choices(children, lang)
+    participants_default = cur.get("children_order") or children
     return vol.Schema({
         vol.Required("name", default=cur.get("name", "")): str,
         vol.Optional("day", default=cur.get("day", DAYS[2])): _select(t["days"]),
         vol.Optional("mode", default=cur.get("mode", WEEK_MODE_AUTO)): _select(t["week_modes"]),
+        vol.Optional("participants", default=participants_default): _select(
+            _child_choices(children, lang, include_auto=False), multiple=True
+        ),
         vol.Optional("fixed_child", default=cur.get("fixed_child") or ""): _select(ch_choices),
         vol.Optional("even_child", default=cur.get("even_child") or ""): _select(ch_choices),
         vol.Optional("odd_child", default=cur.get("odd_child") or ""): _select(ch_choices),
@@ -323,6 +332,7 @@ def build_task_week_schema(children, cur, lang):
 
 
 def parse_task_week(ui, children):
+    participants = ui.get("participants") or children
     return {
         "name": ui["name"].strip(),
         "day": ui.get("day", DAYS[2]),
@@ -330,24 +340,30 @@ def parse_task_week(ui, children):
         "fixed_child": ui.get("fixed_child") or (children[0] if children else ""),
         "even_child": ui.get("even_child") or (children[0] if children else ""),
         "odd_child": ui.get("odd_child") or (children[-1] if children else ""),
-        "children_order": children,
+        "children_order": participants,
     }
 
 
-def build_task_month_schema(cur, lang):
+def build_task_month_schema(children, cur, lang):
     t = _t(lang)
+    participants_default = cur.get("children_order") or children
     return vol.Schema({
         vol.Required("name", default=cur.get("name", "")): str,
         vol.Optional("week_of_month", default=cur.get("week_of_month", "last")): _select(t["month_weeks"]),
         vol.Optional("day_of_week", default=cur.get("day_of_week", DAYS[-1])): _select(t["days"]),
+        vol.Optional("participants", default=participants_default): _select(
+            _child_choices(children, lang, include_auto=False), multiple=True
+        ),
     })
 
 
-def parse_task_month(ui):
+def parse_task_month(ui, children):
+    participants = ui.get("participants") or children
     return {
         "name": ui["name"].strip(),
         "week_of_month": ui.get("week_of_month", "last"),
         "day_of_week": ui.get("day_of_week", DAYS[-1]),
+        "children_order": participants,
     }
 
 
@@ -635,7 +651,7 @@ class ChoreNestOptionsFlow(config_entries.OptionsFlow):
                     self._rotation_tasks = [new_task if tk["name"] == self._edit_task_name else tk for tk in self._rotation_tasks]
                 else:
                     self._rotation_tasks.append(new_task)
-            return await self.async_step_tasks_rotation()
+            return self._save()
 
         schema = build_task_rotation_schema(self._children, cur, self._lang)
         if self._edit_task_name:
@@ -677,7 +693,7 @@ class ChoreNestOptionsFlow(config_entries.OptionsFlow):
                     self._week_tasks = [new_task if tk["name"] == self._edit_task_name else tk for tk in self._week_tasks]
                 else:
                     self._week_tasks.append(new_task)
-            return await self.async_step_tasks_week()
+            return self._save()
 
         schema = build_task_week_schema(self._children, cur, self._lang)
         if self._edit_task_name:
@@ -714,14 +730,14 @@ class ChoreNestOptionsFlow(config_entries.OptionsFlow):
             if ui.pop("remove", False) and self._edit_task_name:
                 self._month_tasks = [tk for tk in self._month_tasks if tk["name"] != self._edit_task_name]
             else:
-                new_task = parse_task_month(ui)
+                new_task = parse_task_month(ui, self._children)
                 if self._edit_task_name:
                     self._month_tasks = [new_task if tk["name"] == self._edit_task_name else tk for tk in self._month_tasks]
                 else:
                     self._month_tasks.append(new_task)
-            return await self.async_step_tasks_month()
+            return self._save()
 
-        schema = build_task_month_schema(cur, self._lang)
+        schema = build_task_month_schema(self._children, cur, self._lang)
         if self._edit_task_name:
             schema = schema.extend({vol.Optional("remove", default=False): bool})
         return self.async_show_form(

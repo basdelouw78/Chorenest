@@ -117,6 +117,7 @@
         "description": "{help}",
         "data": {
           "name": "Naam van de taak",
+          "participants": "Kinderen die deze taak roteren (laat iedereen aangevinkt voor alle kinderen)",
           "fixed_child": "Altijd toewijzen aan (laat op automatisch staan om te roteren)",
           "remove": "🗑️ Deze taak verwijderen"
         }
@@ -140,6 +141,7 @@
           "name": "Naam van de taak",
           "day": "Dag",
           "mode": "Verdeling",
+          "participants": "Kinderen die in aanmerking komen (bij automatisch roteren)",
           "fixed_child": "Vast kind (bij verdeling = altijd hetzelfde kind)",
           "even_child": "Kind in even weken (bij even/oneven verdeling)",
           "odd_child": "Kind in oneven weken (bij even/oneven verdeling)",
@@ -165,6 +167,7 @@
           "name": "Naam van de taak",
           "week_of_month": "Week van de maand",
           "day_of_week": "Dag",
+          "participants": "Kinderen die deze taak doen (laat iedereen aangevinkt voor alle kinderen)",
           "remove": "🗑️ Deze taak verwijderen"
         }
       }

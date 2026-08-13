@@ -111,7 +111,8 @@ def month_assignments_for_date(task_cfg, children, presence_map, d: date) -> lis
         if not trigger:
             continue
 
-        for child in children:
+        eligible = [c for c in (task.get("children_order") or children) if c in children]
+        for child in eligible:
             actual = trigger
             for offset in range(7):
                 check = trigger + timedelta(days=offset)
@@ -133,6 +134,7 @@ def month_assignments_for_date(task_cfg, children, presence_map, d: date) -> lis
 
 def next_month_occurrence(task, children, presence_map, from_date: date) -> dict:
     result = {}
+    eligible = [c for c in (task.get("children_order") or children) if c in children]
     for mo in range(13):
         d = from_date + timedelta(days=mo * 28)
         yr, mn = d.year, d.month
@@ -146,7 +148,7 @@ def next_month_occurrence(task, children, presence_map, from_date: date) -> dict
         if not trigger or trigger < from_date:
             continue
 
-        for child in children:
+        for child in eligible:
             if child in result:
                 continue
             for off in range(7):

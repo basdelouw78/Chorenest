@@ -117,6 +117,7 @@
         "description": "{help}",
         "data": {
           "name": "Name der Aufgabe",
+          "participants": "Kinder, die diese Aufgabe rotieren (alle angehakt lassen für alle Kinder)",
           "fixed_child": "Immer zuweisen an (auf automatisch lassen, um zu rotieren)",
           "remove": "🗑️ Diese Aufgabe entfernen"
         }
@@ -140,6 +141,7 @@
           "name": "Name der Aufgabe",
           "day": "Tag",
           "mode": "Verteilung",
+          "participants": "In Frage kommende Kinder (bei automatischer Rotation)",
           "fixed_child": "Festes Kind (bei Verteilung = immer dasselbe Kind)",
           "even_child": "Kind in geraden Wochen (bei gerade/ungerade Verteilung)",
           "odd_child": "Kind in ungeraden Wochen (bei gerade/ungerade Verteilung)",
@@ -165,6 +167,7 @@
           "name": "Name der Aufgabe",
           "week_of_month": "Woche des Monats",
           "day_of_week": "Tag",
+          "participants": "Kinder, die diese Aufgabe erledigen (alle angehakt lassen für alle Kinder)",
           "remove": "🗑️ Diese Aufgabe entfernen"
         }
       }

@@ -117,6 +117,7 @@
         "description": "{help}",
         "data": {
           "name": "Task name",
+          "participants": "Children who rotate this task (leave all selected for everyone)",
           "fixed_child": "Always assign to (leave on automatic to rotate)",
           "remove": "🗑️ Remove this task"
         }
@@ -140,6 +141,7 @@
           "name": "Task name",
           "day": "Day",
           "mode": "Distribution",
+          "participants": "Children eligible (used for automatic rotation)",
           "fixed_child": "Fixed child (used when distribution = always the same child)",
           "even_child": "Even-week child (used for even/odd distribution)",
           "odd_child": "Odd-week child (used for even/odd distribution)",
@@ -165,6 +167,7 @@
           "name": "Task name",
           "week_of_month": "Week of the month",
           "day_of_week": "Day",
+          "participants": "Children who do this task (leave all selected for everyone)",
           "remove": "🗑️ Remove this task"
         }
       }
