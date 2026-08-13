@@ -80,6 +80,30 @@ def _weeks_of_month(cfg: dict, d: date) -> bool:
     return wom in [int(w) for w in weeks_present if str(w).lower() != "last"]
 
 
+def presence_cycle_index(cfg: dict, d: date):
+    """Index of which two-week presence cycle `d` falls into, for
+    alt_weeks/combo patterns — consecutive *present* weeks get consecutive
+    indices (0, 1, 2, ...), regardless of the absent weeks between them.
+
+    Used to alternate a weekly task between two children in sync with an
+    every-other-week co-parenting schedule: plain ISO calendar-week parity
+    doesn't work for this, because two present weeks are always exactly two
+    calendar weeks apart and therefore always share the same parity.
+
+    Returns None when `cfg` isn't an alternating-weeks pattern (or has no
+    valid start_date) — callers should fall back to plain calendar-week
+    parity in that case, which is correct for "always present" households.
+    """
+    if cfg.get("mode") not in (PRESENCE_ALT_WEEKS, PRESENCE_COMBO):
+        return None
+    try:
+        start = date.fromisoformat(cfg.get("start_date", ""))
+    except ValueError:
+        return None
+    delta_weeks = (d - start).days // 7
+    return delta_weeks // 2
+
+
 def presence_week_summary(cfg: dict, week_start: date) -> dict:
     """Presence + availability per day of the week."""
     result = {}

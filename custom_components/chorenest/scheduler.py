@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import date, timedelta
 
 from .const import DAY_INDEX, DAYS, MONTH_WEEK_KEYS, WEEK_MODE_AUTO, WEEK_MODE_EVEN, WEEK_MODE_ODD, WEEK_MODE_FIXED
-from .presence import child_available_on
+from .presence import child_available_on, presence_cycle_index
 
 
 def _iso_week(d: date) -> int:
@@ -65,7 +65,6 @@ def week_assignments(task_cfg, children, presence_map, d: date, assigned_count=N
         assigned_count = {c: 0 for c in children}
 
     today_wd = d.weekday()
-    is_even = _iso_week(d) % 2 == 0
     week_num = _iso_week(d)
     available = _available_children(children, presence_map, d)
     result = []
@@ -79,13 +78,25 @@ def week_assignments(task_cfg, children, presence_map, d: date, assigned_count=N
 
         if mode == WEEK_MODE_FIXED:
             candidate = task.get("fixed_child", "")
-        elif mode == WEEK_MODE_EVEN:
-            candidate = task.get("even_child", "") if is_even else task.get("odd_child", "")
-        elif mode == WEEK_MODE_ODD:
-            candidate = task.get("odd_child", "") if not is_even else task.get("even_child", "")
+        elif mode in (WEEK_MODE_EVEN, WEEK_MODE_ODD):
+            even_c, odd_c = task.get("even_child", ""), task.get("odd_child", "")
+            # Alternate by presence *cycle* (consecutive present weeks), not
+            # by raw calendar-week parity — see presence_cycle_index().
+            ref_cfg = presence_map.get(even_c) or presence_map.get(odd_c) or {}
+            cycle = presence_cycle_index(ref_cfg, d)
+            is_even = (cycle % 2 == 0) if cycle is not None else (week_num % 2 == 0)
+            if mode == WEEK_MODE_EVEN:
+                candidate = even_c if is_even else odd_c
+            else:
+                candidate = odd_c if not is_even else even_c
         else:  # auto_rotate
             avail_ordered = [c for c in order if c in available]
-            candidate = avail_ordered[week_num % len(avail_ordered)] if avail_ordered else ""
+            if avail_ordered:
+                cycle = presence_cycle_index(presence_map.get(avail_ordered[0], {}), d)
+                idx = cycle if cycle is not None else week_num
+                candidate = avail_ordered[idx % len(avail_ordered)]
+            else:
+                candidate = ""
 
         if not candidate or not child_available_on(presence_map.get(candidate, {}), d):
             if available:
