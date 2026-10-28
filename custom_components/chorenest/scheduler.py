@@ -2,7 +2,7 @@
 from __future__ import annotations
 from datetime import date, timedelta
 
-from .const import DAY_INDEX, DAYS, MONTH_WEEK_KEYS, WEEK_MODE_AUTO, WEEK_MODE_EVEN, WEEK_MODE_ODD, WEEK_MODE_FIXED
+from .const import DAY_INDEX, DAYS, MONTH_WEEK_KEYS, WEEK_MODE_AUTO, WEEK_MODE_EVEN, WEEK_MODE_ODD, WEEK_MODE_FIXED, WEEK_MODE_ALL
 from .presence import child_available_on, presence_cycle_index
 from .pickup import due_by_collection
 
@@ -79,6 +79,18 @@ def week_assignments(task_cfg, children, presence_map, d: date, assigned_count=N
 
         mode = task.get("mode", WEEK_MODE_AUTO)
         order = task.get("children_order") or children
+
+        if mode == WEEK_MODE_ALL:
+            # Everyone who is home and available does it himself; a child who
+            # isn't there simply skips it (no hand-over to a sibling).
+            for c in order:
+                if c in available:
+                    assigned_count[c] = assigned_count.get(c, 0) + 1
+                    item = {"task": task["name"], "child": c, "type": "week", "day": DAYS[today_wd], "everyone": True}
+                    if task.get("collection_sensor"):
+                        item["collection"] = True
+                    result.append(item)
+            continue
 
         if mode == WEEK_MODE_FIXED:
             candidate = task.get("fixed_child", "")

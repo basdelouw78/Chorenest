@@ -27,7 +27,7 @@ from .const import (
     CHILD_COLOR_OPTIONS, DEFAULT_COLOR_ORDER, DAYS, MONTH_WEEK_KEYS,
     PRESENCE_ALWAYS, PRESENCE_ALT_WEEKS, PRESENCE_FIXED_DAYS,
     PRESENCE_WEEKS_MONTH, PRESENCE_COMBO,
-    WEEK_MODE_AUTO, WEEK_MODE_EVEN, WEEK_MODE_ODD, WEEK_MODE_FIXED,
+    WEEK_MODE_AUTO, WEEK_MODE_EVEN, WEEK_MODE_ODD, WEEK_MODE_FIXED, WEEK_MODE_ALL,
 )
 
 LANG_CHOICES = {
@@ -65,6 +65,7 @@ T = {
         "week_modes": {
             WEEK_MODE_AUTO: "🔄 Automatisch roteren", WEEK_MODE_EVEN: "Even weken",
             WEEK_MODE_ODD: "Oneven weken", WEEK_MODE_FIXED: "Altijd hetzelfde kind",
+            WEEK_MODE_ALL: "👨‍👩‍👧‍👦 Iedereen (elk kind doet hem zelf)",
         },
         "days": dict(zip(DAYS, ["Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag", "Zaterdag", "Zondag"])),
         "month_weeks": dict(zip(MONTH_WEEK_KEYS, ["1e week", "2e week", "3e week", "4e week", "Laatste week"])),
@@ -116,6 +117,7 @@ T = {
         "week_modes": {
             WEEK_MODE_AUTO: "🔄 Auto rotate", WEEK_MODE_EVEN: "Even weeks",
             WEEK_MODE_ODD: "Odd weeks", WEEK_MODE_FIXED: "Always the same child",
+            WEEK_MODE_ALL: "👨‍👩‍👧‍👦 Everyone (each child does it himself)",
         },
         "days": dict(zip(DAYS, ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"])),
         "month_weeks": dict(zip(MONTH_WEEK_KEYS, ["1st week", "2nd week", "3rd week", "4th week", "Last week"])),
@@ -166,6 +168,7 @@ T = {
         "week_modes": {
             WEEK_MODE_AUTO: "🔄 Automatisch rotieren", WEEK_MODE_EVEN: "Gerade Wochen",
             WEEK_MODE_ODD: "Ungerade Wochen", WEEK_MODE_FIXED: "Immer dasselbe Kind",
+            WEEK_MODE_ALL: "👨‍👩‍👧‍👦 Alle (jedes Kind selbst)",
         },
         "days": dict(zip(DAYS, ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"])),
         "month_weeks": dict(zip(MONTH_WEEK_KEYS, ["1. Woche", "2. Woche", "3. Woche", "4. Woche", "Letzte Woche"])),

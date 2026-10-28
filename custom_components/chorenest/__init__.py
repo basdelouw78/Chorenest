@@ -174,6 +174,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         def find(d: date, task: str, child: str) -> dict:
             for t in _scheduled(cfg, d, ed["swaps"]):
                 if t["task"] == task and t["child"] == child and t.get("type") in SWAPPABLE_TYPES:
+                    if t.get("everyone"):
+                        raise HomeAssistantError(f"'{task}' doet iedereen zelf, die kan niet geruild worden.")
                     if t.get("swap_id"):
                         raise HomeAssistantError(f"{task} op {d.isoformat()} is al geruild. Draai die ruil eerst terug.")
                     return t
