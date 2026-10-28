@@ -58,6 +58,15 @@ type: custom:chorenest-card
 entity: sensor.chorenest_week
 ```
 
+For a compact "today's tasks only" card for one child — handy on that child's own dashboard page in the mobile app — point the same card at the child's sensor. `title`, `emoji` and `color` are optional:
+```yaml
+type: custom:chorenest-card
+entity: sensor.chorenest_jasper
+title: Jasper
+emoji: ⭐
+color: "#1565C0"
+```
+
 ---
 
 ## ✏️ Changing things after setup
