@@ -13,7 +13,7 @@ from .const import (
     CONF_ROTATION_TASKS, CONF_WEEK_TASKS,
 )
 from .presence import child_available_on
-from .scheduler import rotation_assignments, week_assignments
+from .plan import week_plan
 from .pickup import all_dates, collection_sensors, remember
 from .swaps import SWAPPABLE_TYPES, apply_swaps, current_swaps, week_start
 
@@ -124,12 +124,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # ── Swapping tasks between children (current week only) ──────────────────
     def _scheduled(cfg, d: date, swaps: list) -> list[dict]:
         """Swappable tasks of one day as they currently stand (swaps applied)."""
-        children = cfg.get(CONF_CHILDREN, [])
-        pres = cfg.get(CONF_CHILD_PRESENCE, {})
-        tasks = rotation_assignments(cfg.get(CONF_ROTATION_TASKS, []), children, pres, d) + \
-            week_assignments(cfg.get(CONF_WEEK_TASKS, []), children, pres, d,
-                             collections=hass.data[DOMAIN][entry.entry_id].get("collections"))
-        return apply_swaps(tasks, d.isoformat(), swaps)
+        return week_plan(cfg, week_start(d), swaps, hass.data[DOMAIN][entry.entry_id].get("collections")).get(d.isoformat(), [])
 
     def _parse_day(value, what: str) -> date:
         try:
@@ -212,8 +207,125 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         ed["swaps"] = [s for s in ed["swaps"] if s["id"] != sid]
         await _save_swaps(ed)
         legs = gone[0]["legs"]
-        await _log("Ruil teruggedraaid: " + "; ".join(f"'{l['task']}' ({l['date']}) weer bij {l['from']}" for l in legs))
+        await _log("Ruil teruggedraaid: " + "; ".join(f"'{l['task']}' weer op {l['date']} bij {l['from']}" for l in legs))
 
+    # ── A child moves her own task(s) to another day of this week ───────────
+    def _done_key(t: dict, d: date) -> str:
+        pre = "rot" if t.get("type") == "rotation" else "wk"
+        return f"{pre}__{d.isoformat()}__{t['child']}__{t['task']}"
+
+    def _own_day(cfg, ed, child: str, d: date) -> list[dict]:
+        """Movable, not yet done tasks of one child on one day."""
+        return [t for t in _scheduled(cfg, d, ed["swaps"])
+                if t.get("child") == child and t.get("type") in SWAPPABLE_TYPES
+                and not t.get("swap_id") and not ed["done"].get(_done_key(t, d))]
+
+    def _check_days(cfg, child: str, *days: date):
+        children = cfg.get(CONF_CHILDREN, [])
+        if child not in children:
+            raise HomeAssistantError(f"Onbekend kind: {child}")
+        today = date.today()
+        for d in days:
+            if d < today or week_start(d) != week_start(today):
+                raise HomeAssistantError("Verplaatsen kan alleen naar vandaag en de rest van deze week.")
+        pres = cfg.get(CONF_CHILD_PRESENCE, {}).get(child, {})
+        for d in days:
+            if not child_available_on(pres, d):
+                raise HomeAssistantError(f"{child} is op {d.isoformat()} niet thuis of heeft geen tijd.")
+
+    async def _store_swap(ed, legs: list, msg: str):
+        swap = {"id": uuid.uuid4().hex[:8], "week": week_start(date.today()).isoformat(),
+                "created": datetime.now().isoformat(timespec="seconds"), "legs": legs}
+        ed["swaps"].append(swap)
+        await _save_swaps(ed)
+        await _log(msg + " — alleen deze week")
+
+    def _day_bound(t: dict) -> bool:
+        """Daily rotating tasks and bin tasks belong to their day: moving one
+        means trading it with whoever has the same task on the other day."""
+        return t.get("type") == "rotation" or bool(t.get("collection"))
+
+    def _plan_move(cfg, ed, child: str, t: dict, src: date, dst: date):
+        """Legs that put task t of child from src on dst, or (None, reason)."""
+        if t.get("collection"):
+            return None, f"'{t['task']}' hoort bij de ophaaldag en kan niet verplaatst worden"
+        if not _day_bound(t):
+            if any(x["task"] == t["task"] and x.get("child") == child for x in _scheduled(cfg, dst, ed["swaps"])):
+                return None, f"{child} heeft '{t['task']}' op {dst.isoformat()} al"
+            return [{"date": src.isoformat(), "task": t["task"], "from": child, "to": child, "to_date": dst.isoformat()}], None
+        holder = next((x for x in _scheduled(cfg, dst, ed["swaps"])
+                       if x["task"] == t["task"] and x.get("child") != child and not x.get("swap_id")), None)
+        if not holder:
+            return None, f"'{t['task']}' hoort bij {src.isoformat()} en staat op {dst.isoformat()} niet bij iemand anders"
+        other = holder["child"]
+        if ed["done"].get(_done_key(holder, dst)):
+            return None, f"{other} heeft '{t['task']}' op {dst.isoformat()} al gedaan"
+        if not child_available_on(cfg.get(CONF_CHILD_PRESENCE, {}).get(other, {}), src):
+            return None, f"{other} kan op {src.isoformat()} niet"
+        return [{"date": src.isoformat(), "task": t["task"], "from": child, "to": other},
+                {"date": dst.isoformat(), "task": t["task"], "from": other, "to": child}], None
+
+    def _describe(legs: list, child: str) -> str:
+        out = []
+        for l in legs:
+            if l.get("to_date"):
+                out.append(f"'{l['task']}' naar {l['to_date']}")
+            elif l["from"] == child:
+                out.append(f"'{l['task']}' ({l['date']}) naar {l['to']}")
+            else:
+                out.append(f"'{l['task']}' ({l['date']}) van {l['from']}")
+        return "; ".join(out)
+
+    async def handle_move_task(call):
+        ed = hass.data[DOMAIN][entry.entry_id]
+        cfg = ed["config"]
+        ed["swaps"] = current_swaps(ed["swaps"], date.today())
+        child, task = call.data["child"], call.data["task"]
+        day_a = _parse_day(call.data["date"], "de taak")
+        day_b = _parse_day(call.data["to_date"], "de nieuwe dag")
+        if day_a == day_b:
+            raise HomeAssistantError("Kies een andere dag.")
+        _check_days(cfg, child, day_a, day_b)
+        t = next((x for x in _own_day(cfg, ed, child, day_a) if x["task"] == task), None)
+        if not t:
+            raise HomeAssistantError(f"{child} heeft op {day_a.isoformat()} geen open taak '{task}' die verplaatst kan worden.")
+        legs, why = _plan_move(cfg, ed, child, t, day_a, day_b)
+        if not legs:
+            raise HomeAssistantError(why[0].upper() + why[1:] + ".")
+        await _store_swap(ed, legs, f"{child} verplaatst naar {day_b.isoformat()}: " + _describe(legs, child))
+
+    async def handle_swap_days(call):
+        ed = hass.data[DOMAIN][entry.entry_id]
+        cfg = ed["config"]
+        ed["swaps"] = current_swaps(ed["swaps"], date.today())
+        child = call.data["child"]
+        day_a = _parse_day(call.data["date"], "de dag")
+        day_b = _parse_day(call.data["other_date"], "de andere dag")
+        if day_a == day_b:
+            raise HomeAssistantError("Kies twee verschillende dagen.")
+        _check_days(cfg, child, day_a, day_b)
+        ta, tb = _own_day(cfg, ed, child, day_a), _own_day(cfg, ed, child, day_b)
+        na, nb = {t["task"] for t in ta}, {t["task"] for t in tb}
+        legs, kept = [], []
+        # A task she has on both days simply stays put.
+        for ts, src, dst, both in ((ta, day_a, day_b, nb), (tb, day_b, day_a, na)):
+            for t in ts:
+                if t["task"] in both:
+                    continue
+                l, why = _plan_move(cfg, ed, child, t, src, dst)
+                if l:
+                    legs += l
+                else:
+                    kept.append(why)
+        if not legs:
+            raise HomeAssistantError("Er valt niets te ruilen" + (": " + "; ".join(kept) if kept else ": op die dagen staan dezelfde taken of niets") + ".")
+        msg = f"{child} ruilt {day_a.isoformat()} en {day_b.isoformat()}: " + _describe(legs, child)
+        if kept:
+            msg += " (blijft staan: " + "; ".join(kept) + ")"
+        await _store_swap(ed, legs, msg)
+
+    hass.services.async_register(DOMAIN, "move_task", handle_move_task)
+    hass.services.async_register(DOMAIN, "swap_days", handle_swap_days)
     hass.services.async_register(DOMAIN, "swap_task", handle_swap_task)
     hass.services.async_register(DOMAIN, "undo_swap", handle_undo_swap)
     hass.services.async_register(DOMAIN, "mark_done", handle_mark_done)

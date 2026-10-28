@@ -83,7 +83,7 @@ Every screen returns you to the relevant menu afterwards, so adding several task
 
 ## 🔧 Services
 
-`chorenest.mark_done` toggles a task done/not done — call with either a `key` (from the sensor's task attributes) or `child`+`task`. `chorenest.set_presence` manually overrides a child's presence (`present: true/false`, or omit/`null` to go back to automatic). `chorenest.clear_presence_override` clears that override. `chorenest.reset_week` clears completed weekly tasks (monthly tasks are kept); `chorenest.reset_all` clears everything. `chorenest.swap_task` / `chorenest.undo_swap` trade tasks between children for the current week (see below).
+`chorenest.mark_done` toggles a task done/not done — call with either a `key` (from the sensor's task attributes) or `child`+`task`. `chorenest.set_presence` manually overrides a child's presence (`present: true/false`, or omit/`null` to go back to automatic). `chorenest.clear_presence_override` clears that override. `chorenest.reset_week` clears completed weekly tasks (monthly tasks are kept); `chorenest.reset_all` clears everything. `chorenest.swap_task` / `chorenest.move_task` / `chorenest.swap_days` / `chorenest.undo_swap` trade or move tasks for the current week (see below).
 
 ### 🔁 Swapping tasks
 
@@ -100,6 +100,8 @@ data:
   other_task: Badkamer schoonmaken   # optional: what Jasper does in return
   other_date: "2026-11-01"
 ```
+A child can also move her own task to another day (`chorenest.move_task` with `child`, `task`, `date`, `to_date`), or swap two of her days at once — e.g. a free day with a day full of tasks (`chorenest.swap_days` with `child`, `date`, `other_date`). Weekly tasks simply move along. Daily rotating tasks belong to their day, so moving one means trading it with whoever has that task on the other day (that child then does it on the original day). Bin tasks linked to a collection sensor stay on their collection day. Moved tasks carry `moved_from` in the sensor attributes.
+
 Only today and later days of the current week can be swapped, the other child must be home and available on that day, and a task that was already swapped has to be swapped back first. `chorenest.undo_swap` with the `swap_id` reverts a swap. Swapped tasks carry `swapped_from` and `swap_id` in the sensor attributes, `sensor.chorenest_week` lists the week's swaps in `swaps`, and every swap and undo is written to the Home Assistant logbook. The card shows a 🔁 marker on swapped tasks.
 
 ### 🗑️ Bin days from a waste-collection sensor
