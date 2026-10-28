@@ -1,11 +1,14 @@
 /**
- * ChoreNest Card v1.1
+ * ChoreNest Card v1.2
  * Co-parenting + blocked days + rotation/weekly/monthly tasks
  * Auto-detects per-child sensors (sensor.chorenest_<name>) and renders a
  * compact "today's tasks only" view for them — ideal for a child's own
  * dashboard page in the mobile app. Point the same card at
  * sensor.chorenest_week for the full family week overview.
  */
+
+// Tasks traded with chorenest.swap_task carry `swapped_from` (the child that gave it away).
+function swapTag(t) { return t.swapped_from ? ' <span class="sw" title="swapped with '+t.swapped_from+'">🔁 '+t.swapped_from+'</span>' : ''; }
 
 class ChoreNestCard extends HTMLElement {
   constructor() { super(); this.attachShadow({mode:"open"}); }
@@ -99,7 +102,7 @@ class ChoreNestCard extends HTMLElement {
         g.forEach(function(t){
           body += '<button class="tbtn tbtn-solo'+(t.done?" done":"")+'" data-key="'+t.key+'">' +
             '<span class="ti">'+(t.icon||"✔️")+'</span>' +
-            '<span class="tn">'+t.task+'</span>' +
+            '<span class="tn">'+t.task+swapTag(t)+'</span>' +
             '<span class="tk">'+(t.done?"✅":"⬜")+'</span>' +
           '</button>';
         });
@@ -158,7 +161,7 @@ class ChoreNestCard extends HTMLElement {
           g.forEach(function(t){
             rows += '<button class="tbtn'+(t.done?" done":"")+'" data-key="'+t.key+'">' +
               '<span class="ti">'+(t.icon||"✔️")+'</span>' +
-              '<span class="tn">'+t.task+'</span>' +
+              '<span class="tn">'+t.task+swapTag(t)+'</span>' +
               '<span class="tk">'+(t.done?"✅":"⬜")+'</span>' +
             '</button>';
           });
@@ -198,8 +201,8 @@ class ChoreNestCard extends HTMLElement {
         tasks.forEach(function(t){
           var th = themes[t.child]||{bg:"#1565C0",emoji:"⭐"};
           var typeIcon = t.type==="month"?" 🗓️":t.type==="week"?" 📅":"";
-          badges += '<div class="wb tbtn'+(t.done?" done":"")+'" style="background:'+th.bg+'" data-key="'+t.key+'" title="'+t.child+': '+t.task+typeIcon+'">'+
-            th.emoji+' <span class="wn">'+t.task.split(/[\s\/]/)[0]+'</span>'+
+          badges += '<div class="wb tbtn'+(t.done?" done":"")+'" style="background:'+th.bg+'" data-key="'+t.key+'" title="'+t.child+': '+t.task+typeIcon+(t.swapped_from?' (swapped with '+t.swapped_from+')':'')+'">'+
+            th.emoji+' <span class="wn">'+t.task.split(/[\s\/]/)[0]+'</span>'+(t.swapped_from?'🔁':'')+
           '</div>';
         });
         children.forEach(function(c){
@@ -294,6 +297,7 @@ class ChoreNestCard extends HTMLElement {
     ".ti{font-size:17px;flex-shrink:0}",
     ".tn{flex:1}",
     ".tk{font-size:17px;flex-shrink:0}",
+    ".sw{font-size:11px;font-weight:600;opacity:.8;white-space:nowrap}",
     ".wk-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}",
     ".wc{border-radius:10px;border:2px solid var(--divider-color,#e0e0e0);overflow:hidden}",
     ".wc.today{border-color:#1a237e;box-shadow:0 2px 10px rgba(26,35,126,.25)}",
@@ -420,7 +424,7 @@ if (!window.customCards.find(function(c){ return c.type === "chorenest-card"; })
   });
 }
 console.info(
-  "%c CHORENEST %c v1.1 ",
+  "%c CHORENEST %c v1.2 ",
   "color:white;background:#1a237e;padding:3px 8px;border-radius:4px 0 0 4px;font-weight:700",
   "color:#1a237e;background:#fff;padding:3px 8px;border-radius:0 4px 4px 0;border:1px solid #1a237e"
 );
