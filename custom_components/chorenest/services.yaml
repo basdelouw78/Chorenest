@@ -57,6 +57,55 @@ clear_presence_override:
       selector:
         text:
 
+move_task:
+  name: Move a task to another day
+  description: >-
+    A child moves one of her own tasks to another day of the current week
+    (today or later, a day she is home and has time). From Monday the normal
+    schedule applies again.
+  fields:
+    child:
+      name: Child
+      required: true
+      selector:
+        text:
+    task:
+      name: Task
+      required: true
+      selector:
+        text:
+    date:
+      name: Date
+      description: Current date of the task.
+      required: true
+      selector:
+        date:
+    to_date:
+      name: New date
+      required: true
+      selector:
+        date:
+swap_days:
+  name: Swap two days of one child
+  description: >-
+    A child swaps the open tasks of two of her days this week, e.g. a free day
+    with a day that has tasks. Tasks that are on both days stay put.
+  fields:
+    child:
+      name: Child
+      required: true
+      selector:
+        text:
+    date:
+      name: Date
+      required: true
+      selector:
+        date:
+    other_date:
+      name: Other date
+      required: true
+      selector:
+        date:
 swap_task:
   name: Swap a task
   description: >-
