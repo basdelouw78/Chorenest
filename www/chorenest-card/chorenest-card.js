@@ -7,7 +7,7 @@
  * sensor.chorenest_week for the full family week overview.
  */
 
-// Tasks traded with chorenest.swap_task carry `swapped_from` (the child that gave it away).
+// Tasks traded with chorenest.swap_task carry "swapped_from" (the child that gave it away).
 function swapTag(t) { return t.swapped_from ? ' <span class="sw" title="swapped with '+t.swapped_from+'">🔁 '+t.swapped_from+'</span>' : ''; }
 
 class ChoreNestCard extends HTMLElement {
