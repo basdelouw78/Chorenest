@@ -102,6 +102,10 @@ data:
 ```
 Only today and later days of the current week can be swapped, the other child must be home and available on that day, and a task that was already swapped has to be swapped back first. `chorenest.undo_swap` with the `swap_id` reverts a swap. Swapped tasks carry `swapped_from` and `swap_id` in the sensor attributes, `sensor.chorenest_week` lists the week's swaps in `swaps`, and every swap and undo is written to the Home Assistant logbook. The card shows a 🔁 marker on swapped tasks.
 
+### 🗑️ Bin days from a waste-collection sensor
+
+A weekly task can follow a collection sensor instead of a fixed weekday — handy for bins, whose collection day shifts around holidays or isn't weekly at all. In **Configure → Weekly tasks**, pick the sensor under *Collection sensor* (any sensor whose state or `year_month_day_date` attribute holds the next date, e.g. the [Afvalinfo](https://github.com/heyajohnny/afvalinfo) integration) and choose *The day before* or *On the collection day*. The task then lands on that day, with the task's normal distribution (auto rotate, even/odd, fixed). Without a known date yet it falls back to the fixed day. Dates already seen are remembered for three weeks, so the task stays visible (and ticked off) after the sensor jumps to the next collection. Tasks that follow a sensor carry `collection: true` in the sensor attributes.
+
 Example automation — reset every Monday at 00:01:
 ```yaml
 automation:

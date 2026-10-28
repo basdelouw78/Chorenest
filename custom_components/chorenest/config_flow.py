@@ -87,7 +87,8 @@ T = {
         "is_are_1": "is", "is_are_n": "zijn",
         "blocked_help": "Vink dagen aan waarop dit kind WEL thuis is maar GEEN tijd heeft voor taken (die dag gaat automatisch naar een ander kind).",
         "rotation_help": "Taken die elke dag terugkomen en automatisch rouleren tussen de kinderen.",
-        "week_help": "Een taak die één keer per week terugkomt op een vaste dag.",
+        "week_help": "Een taak die één keer per week terugkomt op een vaste dag. Koppel hem eventueel aan een ophaalsensor (bv. Afvalinfo): dan staat de taak op de dag voor of van de ophaling in plaats van op de vaste dag.",
+        "pickup_offsets": {"-1": "De dag ervoor", "0": "Op de ophaaldag zelf"},
         "month_help": "Een taak die één keer per maand terugkomt.",
         "remove_label": "🗑️ Deze verwijderen",
         "no_items": "Nog niets toegevoegd.",
@@ -136,7 +137,8 @@ T = {
         "is_are_1": "has", "is_are_n": "have",
         "blocked_help": "Check days when this child IS home but has NO time for tasks (those tasks automatically go to another child).",
         "rotation_help": "Tasks that recur every day and rotate automatically between the children.",
-        "week_help": "A task that recurs once a week on a fixed day.",
+        "week_help": "A task that recurs once a week on a fixed day. Optionally link it to a collection sensor (e.g. Afvalinfo): the task then lands on the day before or of the collection instead of the fixed day.",
+        "pickup_offsets": {"-1": "The day before", "0": "On the collection day"},
         "month_help": "A task that recurs once a month.",
         "remove_label": "🗑️ Remove this",
         "no_items": "Nothing added yet.",
@@ -185,7 +187,8 @@ T = {
         "is_are_1": "", "is_are_n": "n",
         "blocked_help": "Tage abhaken, an denen dieses Kind zuhause ist, aber KEINE Zeit für Aufgaben hat (diese gehen automatisch an ein anderes Kind).",
         "rotation_help": "Aufgaben, die jeden Tag anfallen und automatisch zwischen den Kindern rotieren.",
-        "week_help": "Eine Aufgabe, die einmal pro Woche an einem festen Tag anfällt.",
+        "week_help": "Eine Aufgabe, die einmal pro Woche an einem festen Tag anfällt. Optional mit einem Abholsensor (z. B. Afvalinfo) verknüpfen: dann liegt die Aufgabe am Tag vor oder am Tag der Abholung statt am festen Tag.",
+        "pickup_offsets": {"-1": "Am Tag davor", "0": "Am Abholtag"},
         "month_help": "Eine Aufgabe, die einmal im Monat anfällt.",
         "remove_label": "🗑️ Entfernen",
         "no_items": "Noch nichts hinzugefügt.",
@@ -328,6 +331,9 @@ def build_task_week_schema(children, cur, lang):
         vol.Optional("fixed_child", default=cur.get("fixed_child") or ""): _select(ch_choices),
         vol.Optional("even_child", default=cur.get("even_child") or ""): _select(ch_choices),
         vol.Optional("odd_child", default=cur.get("odd_child") or ""): _select(ch_choices),
+        vol.Optional("collection_sensor", description={"suggested_value": cur.get("collection_sensor")}):
+            selector.EntitySelector(selector.EntitySelectorConfig(domain="sensor")),
+        vol.Optional("collection_offset", default=str(cur.get("collection_offset", -1))): _select(t["pickup_offsets"]),
     })
 
 
@@ -341,6 +347,8 @@ def parse_task_week(ui, children):
         "even_child": ui.get("even_child") or (children[0] if children else ""),
         "odd_child": ui.get("odd_child") or (children[-1] if children else ""),
         "children_order": participants,
+        **({"collection_sensor": ui["collection_sensor"],
+            "collection_offset": int(ui.get("collection_offset", -1))} if ui.get("collection_sensor") else {}),
     }
 
 

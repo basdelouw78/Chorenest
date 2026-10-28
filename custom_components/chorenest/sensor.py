@@ -40,6 +40,10 @@ def _done(hass, entry):
     return hass.data[DOMAIN].get(entry.entry_id, {}).get("done", {})
 
 
+def _collections(hass, entry):
+    return hass.data[DOMAIN].get(entry.entry_id, {}).get("collections", {})
+
+
 def _swaps(hass, entry):
     return current_swaps(hass.data[DOMAIN].get(entry.entry_id, {}).get("swaps", []), date.today())
 
@@ -103,7 +107,7 @@ class ChoreNestDashboardSensor(SensorEntity):
                 tasks_list.append({**t, "icon": "🔄", "done": done_map.get(key, False), "date": date_str, "key": key,
                                     **{k: th.get(k, "") for k in ["bg", "light", "emoji"]}})
 
-            for t in apply_swaps(week_assignments(week_tasks, children, child_presence, day_date), date_str, swaps):
+            for t in apply_swaps(week_assignments(week_tasks, children, child_presence, day_date, collections=_collections(self.hass, self._entry)), date_str, swaps):
                 key = f"wk__{date_str}__{t['child']}__{t['task']}"
                 th = child_themes.get(t["child"], {})
                 tasks_list.append({**t, "icon": "📅", "done": done_map.get(key, False), "date": date_str, "key": key,
@@ -227,7 +231,7 @@ class ChoreNestChildSensor(SensorEntity):
                 key = f"rot__{date_str}__{self._child}__{t['task']}"
                 result.append({**t, "icon": "🔄", "done": done_map.get(key, False), "date": date_str, "key": key})
 
-        for t in apply_swaps(week_assignments(config.get(CONF_WEEK_TASKS, []), children, child_pres, today), date_str, swaps):
+        for t in apply_swaps(week_assignments(config.get(CONF_WEEK_TASKS, []), children, child_pres, today, collections=_collections(self.hass, self._entry)), date_str, swaps):
             if t["child"] == self._child:
                 key = f"wk__{date_str}__{self._child}__{t['task']}"
                 result.append({**t, "icon": "📅", "done": done_map.get(key, False), "date": date_str, "key": key})

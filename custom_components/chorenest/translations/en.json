@@ -145,6 +145,8 @@
           "fixed_child": "Fixed child (used when distribution = always the same child)",
           "even_child": "Even-week child (used for even/odd distribution)",
           "odd_child": "Odd-week child (used for even/odd distribution)",
+          "collection_sensor": "Collection sensor (optional, e.g. Afvalinfo)",
+          "collection_offset": "When (with collection sensor)",
           "remove": "🗑️ Remove this task"
         }
       },
