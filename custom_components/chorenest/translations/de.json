@@ -141,7 +141,7 @@
           "name": "Name der Aufgabe",
           "day": "Tag",
           "mode": "Verteilung",
-          "participants": "In Frage kommende Kinder (bei automatischer Rotation)",
+          "participants": "In Frage kommende Kinder (bei automatischer Rotation und bei alle)",
           "fixed_child": "Festes Kind (bei Verteilung = immer dasselbe Kind)",
           "even_child": "Kind in geraden Wochen (bei gerade/ungerade Verteilung)",
           "odd_child": "Kind in ungeraden Wochen (bei gerade/ungerade Verteilung)",

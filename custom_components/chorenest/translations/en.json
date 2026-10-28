@@ -141,7 +141,7 @@
           "name": "Task name",
           "day": "Day",
           "mode": "Distribution",
-          "participants": "Children eligible (used for automatic rotation)",
+          "participants": "Children eligible (used for automatic rotation and for everyone)",
           "fixed_child": "Fixed child (used when distribution = always the same child)",
           "even_child": "Even-week child (used for even/odd distribution)",
           "odd_child": "Odd-week child (used for even/odd distribution)",

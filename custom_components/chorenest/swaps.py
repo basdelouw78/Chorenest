@@ -43,7 +43,7 @@ def apply_swaps(tasks: list[dict], date_str: str, swaps: list) -> list[dict]:
     out = []
     for t in tasks:
         nt = t
-        if t.get("type") in SWAPPABLE_TYPES:
+        if t.get("type") in SWAPPABLE_TYPES and not t.get("everyone"):
             for i, (sid, leg) in enumerate(legs):
                 if i in used:
                     continue

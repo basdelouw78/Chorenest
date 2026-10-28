@@ -141,7 +141,7 @@
           "name": "Naam van de taak",
           "day": "Dag",
           "mode": "Verdeling",
-          "participants": "Kinderen die in aanmerking komen (bij automatisch roteren)",
+          "participants": "Kinderen die in aanmerking komen (bij automatisch roteren en bij iedereen)",
           "fixed_child": "Vast kind (bij verdeling = altijd hetzelfde kind)",
           "even_child": "Kind in even weken (bij even/oneven verdeling)",
           "odd_child": "Kind in oneven weken (bij even/oneven verdeling)",
