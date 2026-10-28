@@ -145,6 +145,8 @@
           "fixed_child": "Festes Kind (bei Verteilung = immer dasselbe Kind)",
           "even_child": "Kind in geraden Wochen (bei gerade/ungerade Verteilung)",
           "odd_child": "Kind in ungeraden Wochen (bei gerade/ungerade Verteilung)",
+          "collection_sensor": "Abholsensor (optional, z. B. Afvalinfo)",
+          "collection_offset": "Wann (mit Abholsensor)",
           "remove": "🗑️ Diese Aufgabe entfernen"
         }
       },

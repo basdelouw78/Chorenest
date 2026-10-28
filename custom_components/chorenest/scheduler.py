@@ -4,6 +4,7 @@ from datetime import date, timedelta
 
 from .const import DAY_INDEX, DAYS, MONTH_WEEK_KEYS, WEEK_MODE_AUTO, WEEK_MODE_EVEN, WEEK_MODE_ODD, WEEK_MODE_FIXED
 from .presence import child_available_on, presence_cycle_index
+from .pickup import due_by_collection
 
 
 def _iso_week(d: date) -> int:
@@ -60,7 +61,7 @@ def rotation_assignments(task_cfg, children, presence_map, d: date, assigned_cou
 
 # ── Weekly tasks ─────────────────────────────────────────────────────────────
 
-def week_assignments(task_cfg, children, presence_map, d: date, assigned_count=None) -> list[dict]:
+def week_assignments(task_cfg, children, presence_map, d: date, assigned_count=None, collections=None) -> list[dict]:
     if assigned_count is None:
         assigned_count = {c: 0 for c in children}
 
@@ -70,7 +71,10 @@ def week_assignments(task_cfg, children, presence_map, d: date, assigned_count=N
     result = []
 
     for task in task_cfg:
-        if DAY_INDEX.get(task.get("day", "monday"), 0) != today_wd:
+        due = due_by_collection(task, d, collections)
+        if due is None:
+            due = DAY_INDEX.get(task.get("day", "monday"), 0) == today_wd
+        if not due:
             continue
 
         mode = task.get("mode", WEEK_MODE_AUTO)
@@ -106,7 +110,10 @@ def week_assignments(task_cfg, children, presence_map, d: date, assigned_count=N
 
         if candidate in children:
             assigned_count[candidate] = assigned_count.get(candidate, 0) + 1
-            result.append({"task": task["name"], "child": candidate, "type": "week", "day": task.get("day", "")})
+            item = {"task": task["name"], "child": candidate, "type": "week", "day": DAYS[today_wd]}
+            if task.get("collection_sensor"):
+                item["collection"] = True
+            result.append(item)
     return result
 
 

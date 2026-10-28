@@ -4,7 +4,8 @@ import logging
 import uuid
 from datetime import date, datetime
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.storage import Store
 from .const import (
@@ -13,12 +14,14 @@ from .const import (
 )
 from .presence import child_available_on
 from .scheduler import rotation_assignments, week_assignments
+from .pickup import all_dates, collection_sensors, remember
 from .swaps import SWAPPABLE_TYPES, apply_swaps, current_swaps, week_start
 
 _LOGGER = logging.getLogger(__name__)
 STORAGE_KEY = f"{DOMAIN}_done"
 STORAGE_VERSION = 1
 SWAP_STORAGE_KEY = f"{DOMAIN}_swaps"
+COLL_STORAGE_KEY = f"{DOMAIN}_collections"
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -34,6 +37,31 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         "swaps": swaps,
         "swap_store": swap_store,
     }
+    ed0 = hass.data[DOMAIN][entry.entry_id]
+
+    # ── Waste-collection dates for weekly tasks that follow a sensor ─────────
+    coll_store = Store(hass, STORAGE_VERSION, COLL_STORAGE_KEY)
+    ed0["collections"] = (await coll_store.async_load() or {}).get("dates", {})
+    sensors = collection_sensors(ed0["config"].get(CONF_WEEK_TASKS, []))
+
+    def _refresh_collections() -> bool:
+        changed = False
+        today = date.today()
+        for ent in sensors:
+            changed |= remember(ed0["collections"], ent, all_dates(hass.states.get(ent)), today)
+        return changed
+
+    _refresh_collections()
+    await coll_store.async_save({"dates": ed0["collections"]})
+
+    if sensors:
+        @callback
+        def _coll_changed(event):
+            if _refresh_collections():
+                hass.async_create_task(coll_store.async_save({"dates": ed0["collections"]}))
+                hass.bus.async_fire(f"{DOMAIN}_updated")
+
+        entry.async_on_unload(async_track_state_change_event(hass, sensors, _coll_changed))
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
@@ -99,7 +127,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         children = cfg.get(CONF_CHILDREN, [])
         pres = cfg.get(CONF_CHILD_PRESENCE, {})
         tasks = rotation_assignments(cfg.get(CONF_ROTATION_TASKS, []), children, pres, d) + \
-            week_assignments(cfg.get(CONF_WEEK_TASKS, []), children, pres, d)
+            week_assignments(cfg.get(CONF_WEEK_TASKS, []), children, pres, d,
+                             collections=hass.data[DOMAIN][entry.entry_id].get("collections"))
         return apply_swaps(tasks, d.isoformat(), swaps)
 
     def _parse_day(value, what: str) -> date:

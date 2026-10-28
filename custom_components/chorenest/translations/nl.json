@@ -145,6 +145,8 @@
           "fixed_child": "Vast kind (bij verdeling = altijd hetzelfde kind)",
           "even_child": "Kind in even weken (bij even/oneven verdeling)",
           "odd_child": "Kind in oneven weken (bij even/oneven verdeling)",
+          "collection_sensor": "Ophaalsensor (optioneel, bv. Afvalinfo)",
+          "collection_offset": "Wanneer (bij ophaalsensor)",
           "remove": "🗑️ Deze taak verwijderen"
         }
       },
