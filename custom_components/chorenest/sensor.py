@@ -14,7 +14,8 @@ from .const import (
 from .config_flow import T as LANG_TEXT
 from .presence import child_present_on, child_available_on, presence_week_summary
 from .scheduler import rotation_assignments, week_assignments, month_assignments_for_date, next_month_occurrence
-from .swaps import apply_swaps, current_swaps
+from .swaps import current_swaps
+from .plan import week_plan
 
 
 def _day_labels(lang):
@@ -94,6 +95,7 @@ class ChoreNestDashboardSensor(SensorEntity):
         today_key = DAYS[today.weekday()]
         week_start = today - timedelta(days=today.weekday())
 
+        plan = week_plan(config, week_start, swaps, _collections(self.hass, self._entry))
         week = {}
         for offset, day_key in enumerate(DAYS):
             day_date = week_start + timedelta(days=offset)
@@ -101,17 +103,15 @@ class ChoreNestDashboardSensor(SensorEntity):
             month_key = day_date.strftime("%Y-%m")
             tasks_list = []
 
-            for t in apply_swaps(rotation_assignments(rot_tasks, children, child_presence, day_date), date_str, swaps):
-                key = f"rot__{date_str}__{t['child']}__{t['task']}"
-                th = child_themes.get(t["child"], {})
-                tasks_list.append({**t, "icon": "🔄", "done": done_map.get(key, False), "date": date_str, "key": key,
-                                    **{k: th.get(k, "") for k in ["bg", "light", "emoji"]}})
-
-            for t in apply_swaps(week_assignments(week_tasks, children, child_presence, day_date, collections=_collections(self.hass, self._entry)), date_str, swaps):
-                key = f"wk__{date_str}__{t['child']}__{t['task']}"
-                th = child_themes.get(t["child"], {})
-                tasks_list.append({**t, "icon": "📅", "done": done_map.get(key, False), "date": date_str, "key": key,
-                                    **{k: th.get(k, "") for k in ["bg", "light", "emoji"]}})
+            day_plan = plan.get(date_str, [])
+            for typ, pre, icon in (("rotation", "rot", "🔄"), ("week", "wk", "📅")):
+                for t in day_plan:
+                    if t.get("type") != typ:
+                        continue
+                    key = f"{pre}__{date_str}__{t['child']}__{t['task']}"
+                    th = child_themes.get(t["child"], {})
+                    tasks_list.append({**t, "icon": icon, "done": done_map.get(key, False), "date": date_str, "key": key,
+                                        **{k: th.get(k, "") for k in ["bg", "light", "emoji"]}})
 
             for t in month_assignments_for_date(month_tasks, children, child_presence, day_date):
                 key = f"month__{month_key}__{t['child']}__{t['task']}"
@@ -226,15 +226,13 @@ class ChoreNestChildSensor(SensorEntity):
         month_key = today.strftime("%Y-%m")
         result = []
 
-        for t in apply_swaps(rotation_assignments(config.get(CONF_ROTATION_TASKS, []), children, child_pres, today), date_str, swaps):
-            if t["child"] == self._child:
-                key = f"rot__{date_str}__{self._child}__{t['task']}"
-                result.append({**t, "icon": "🔄", "done": done_map.get(key, False), "date": date_str, "key": key})
-
-        for t in apply_swaps(week_assignments(config.get(CONF_WEEK_TASKS, []), children, child_pres, today, collections=_collections(self.hass, self._entry)), date_str, swaps):
-            if t["child"] == self._child:
-                key = f"wk__{date_str}__{self._child}__{t['task']}"
-                result.append({**t, "icon": "📅", "done": done_map.get(key, False), "date": date_str, "key": key})
+        day_plan = week_plan(config, today - timedelta(days=today.weekday()), swaps,
+                             _collections(self.hass, self._entry)).get(date_str, [])
+        for typ, pre, icon in (("rotation", "rot", "🔄"), ("week", "wk", "📅")):
+            for t in day_plan:
+                if t.get("type") == typ and t["child"] == self._child:
+                    key = f"{pre}__{date_str}__{self._child}__{t['task']}"
+                    result.append({**t, "icon": icon, "done": done_map.get(key, False), "date": date_str, "key": key})
 
         for t in month_assignments_for_date(config.get(CONF_MONTH_TASKS, []), children, child_pres, today):
             if t["child"] == self._child:
