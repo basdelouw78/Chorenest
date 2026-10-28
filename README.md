@@ -58,6 +58,15 @@ type: custom:chorenest-card
 entity: sensor.chorenest_week
 ```
 
+For a compact "today's tasks only" card for one child — handy on that child's own dashboard page in the mobile app — point the same card at the child's sensor. `title`, `emoji` and `color` are optional:
+```yaml
+type: custom:chorenest-card
+entity: sensor.chorenest_jasper
+title: Jasper
+emoji: ⭐
+color: "#1565C0"
+```
+
 ---
 
 ## ✏️ Changing things after setup
@@ -74,7 +83,24 @@ Every screen returns you to the relevant menu afterwards, so adding several task
 
 ## 🔧 Services
 
-`chorenest.mark_done` toggles a task done/not done — call with either a `key` (from the sensor's task attributes) or `child`+`task`. `chorenest.set_presence` manually overrides a child's presence (`present: true/false`, or omit/`null` to go back to automatic). `chorenest.clear_presence_override` clears that override. `chorenest.reset_week` clears completed weekly tasks (monthly tasks are kept); `chorenest.reset_all` clears everything.
+`chorenest.mark_done` toggles a task done/not done — call with either a `key` (from the sensor's task attributes) or `child`+`task`. `chorenest.set_presence` manually overrides a child's presence (`present: true/false`, or omit/`null` to go back to automatic). `chorenest.clear_presence_override` clears that override. `chorenest.reset_week` clears completed weekly tasks (monthly tasks are kept); `chorenest.reset_all` clears everything. `chorenest.swap_task` / `chorenest.undo_swap` trade tasks between children for the current week (see below).
+
+### 🔁 Swapping tasks
+
+Children can trade tasks with each other for the current week — from Monday the normal schedule applies again. Daily rotating and weekly tasks can be swapped; monthly tasks are per child already.
+
+`chorenest.swap_task` with `child`, `task`, `date` and `with_child` hands a task over to another child (e.g. someone who has a free day). Add `other_task` + `other_date` to make it an exchange, possibly on a different day — "I'll do your Thursday task if you do my Wednesday one":
+```yaml
+action: chorenest.swap_task
+data:
+  child: Jasper
+  task: Plastic buitenzetten
+  date: "2026-10-28"
+  with_child: Nena
+  other_task: Badkamer schoonmaken   # optional: what Jasper does in return
+  other_date: "2026-11-01"
+```
+Only today and later days of the current week can be swapped, the other child must be home and available on that day, and a task that was already swapped has to be swapped back first. `chorenest.undo_swap` with the `swap_id` reverts a swap. Swapped tasks carry `swapped_from` and `swap_id` in the sensor attributes, `sensor.chorenest_week` lists the week's swaps in `swaps`, and every swap and undo is written to the Home Assistant logbook. The card shows a 🔁 marker on swapped tasks.
 
 Example automation — reset every Monday at 00:01:
 ```yaml

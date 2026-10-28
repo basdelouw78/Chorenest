@@ -56,3 +56,60 @@ clear_presence_override:
       required: true
       selector:
         text:
+
+swap_task:
+  name: Swap a task
+  description: >-
+    Two children trade tasks for the current week only (from Monday the normal
+    schedule applies again). Give other_task/other_date for an exchange, e.g.
+    "I do your Thursday task if you do my Wednesday one"; leave them out to
+    simply hand the task over to the other child. Daily rotating and weekly
+    tasks can be swapped.
+  fields:
+    child:
+      name: Child
+      description: Child that currently has the task.
+      required: true
+      selector:
+        text:
+    task:
+      name: Task
+      description: Name of the task to give away.
+      required: true
+      selector:
+        text:
+    date:
+      name: Date
+      description: Date of that task (today or later this week).
+      required: true
+      selector:
+        date:
+    with_child:
+      name: With child
+      description: Child that takes the task over.
+      required: true
+      selector:
+        text:
+    other_task:
+      name: Task in return
+      description: Optional task of the other child that the first child does in return.
+      required: false
+      selector:
+        text:
+    other_date:
+      name: Date of the task in return
+      description: Date of the task in return (required with other_task).
+      required: false
+      selector:
+        date:
+
+undo_swap:
+  name: Undo a swap
+  description: Reverts a swap made with swap_task.
+  fields:
+    swap_id:
+      name: Swap id
+      description: The id from the "swaps" attribute of sensor.chorenest_week.
+      required: true
+      selector:
+        text:

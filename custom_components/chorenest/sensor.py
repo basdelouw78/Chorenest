@@ -14,6 +14,7 @@ from .const import (
 from .config_flow import T as LANG_TEXT
 from .presence import child_present_on, child_available_on, presence_week_summary
 from .scheduler import rotation_assignments, week_assignments, month_assignments_for_date, next_month_occurrence
+from .swaps import apply_swaps, current_swaps
 
 
 def _day_labels(lang):
@@ -37,6 +38,10 @@ def _cfg(hass, entry):
 
 def _done(hass, entry):
     return hass.data[DOMAIN].get(entry.entry_id, {}).get("done", {})
+
+
+def _swaps(hass, entry):
+    return current_swaps(hass.data[DOMAIN].get(entry.entry_id, {}).get("swaps", []), date.today())
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
@@ -70,6 +75,7 @@ class ChoreNestDashboardSensor(SensorEntity):
     def extra_state_attributes(self):
         config = _cfg(self.hass, self._entry)
         done_map = _done(self.hass, self._entry)
+        swaps = _swaps(self.hass, self._entry)
         lang = config.get(CONF_LANG, DEFAULT_LANG)
         children = config.get(CONF_CHILDREN, [])
         child_colors = config.get(CONF_CHILD_COLORS, {})
@@ -91,13 +97,13 @@ class ChoreNestDashboardSensor(SensorEntity):
             month_key = day_date.strftime("%Y-%m")
             tasks_list = []
 
-            for t in rotation_assignments(rot_tasks, children, child_presence, day_date):
+            for t in apply_swaps(rotation_assignments(rot_tasks, children, child_presence, day_date), date_str, swaps):
                 key = f"rot__{date_str}__{t['child']}__{t['task']}"
                 th = child_themes.get(t["child"], {})
                 tasks_list.append({**t, "icon": "🔄", "done": done_map.get(key, False), "date": date_str, "key": key,
                                     **{k: th.get(k, "") for k in ["bg", "light", "emoji"]}})
 
-            for t in week_assignments(week_tasks, children, child_presence, day_date):
+            for t in apply_swaps(week_assignments(week_tasks, children, child_presence, day_date), date_str, swaps):
                 key = f"wk__{date_str}__{t['child']}__{t['task']}"
                 th = child_themes.get(t["child"], {})
                 tasks_list.append({**t, "icon": "📅", "done": done_map.get(key, False), "date": date_str, "key": key,
@@ -162,6 +168,7 @@ class ChoreNestDashboardSensor(SensorEntity):
             "today_label": day_labels.get(today_key, today_key),
             "month_overview": month_overview,
             "coparenting": coparenting,
+            "swaps": swaps,
             "lang": lang,
         }
 
@@ -207,6 +214,7 @@ class ChoreNestChildSensor(SensorEntity):
     def _today_tasks(self):
         config = _cfg(self.hass, self._entry)
         done_map = _done(self.hass, self._entry)
+        swaps = _swaps(self.hass, self._entry)
         children = config.get(CONF_CHILDREN, [])
         child_pres = config.get(CONF_CHILD_PRESENCE, {})
         today = date.today()
@@ -214,12 +222,12 @@ class ChoreNestChildSensor(SensorEntity):
         month_key = today.strftime("%Y-%m")
         result = []
 
-        for t in rotation_assignments(config.get(CONF_ROTATION_TASKS, []), children, child_pres, today):
+        for t in apply_swaps(rotation_assignments(config.get(CONF_ROTATION_TASKS, []), children, child_pres, today), date_str, swaps):
             if t["child"] == self._child:
                 key = f"rot__{date_str}__{self._child}__{t['task']}"
                 result.append({**t, "icon": "🔄", "done": done_map.get(key, False), "date": date_str, "key": key})
 
-        for t in week_assignments(config.get(CONF_WEEK_TASKS, []), children, child_pres, today):
+        for t in apply_swaps(week_assignments(config.get(CONF_WEEK_TASKS, []), children, child_pres, today), date_str, swaps):
             if t["child"] == self._child:
                 key = f"wk__{date_str}__{self._child}__{t['task']}"
                 result.append({**t, "icon": "📅", "done": done_map.get(key, False), "date": date_str, "key": key})

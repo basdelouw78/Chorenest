@@ -1,7 +1,14 @@
 /**
- * ChoreNest Card v1.0
+ * ChoreNest Card v1.2
  * Co-parenting + blocked days + rotation/weekly/monthly tasks
+ * Auto-detects per-child sensors (sensor.chorenest_<name>) and renders a
+ * compact "today's tasks only" view for them — ideal for a child's own
+ * dashboard page in the mobile app. Point the same card at
+ * sensor.chorenest_week for the full family week overview.
  */
+
+// Tasks traded with chorenest.swap_task carry `swapped_from` (the child that gave it away).
+function swapTag(t) { return t.swapped_from ? ' <span class="sw" title="swapped with '+t.swapped_from+'">🔁 '+t.swapped_from+'</span>' : ''; }
 
 class ChoreNestCard extends HTMLElement {
   constructor() { super(); this.attachShadow({mode:"open"}); }
@@ -20,6 +27,16 @@ class ChoreNestCard extends HTMLElement {
       return;
     }
     var a = state.attributes;
+
+    // Per-child sensors (sensor.chorenest_<name>) expose `tasks_today`
+    // instead of a `week` map — render the compact single-child view.
+    if (a.tasks_today !== undefined) {
+      this._childMode = true;
+      this._renderChildToday(state);
+      return;
+    }
+    this._childMode = false;
+
     var children    = a.children || [];
     var themes      = a.child_themes || {};
     var week        = a.week || {};
@@ -43,6 +60,68 @@ class ChoreNestCard extends HTMLElement {
         this._todaySection(children, byChild, themes, todayPres)+
         this._weekSection(week, dayOrder, themes, children, coparenting)+
         (month_ov.length ? this._monthSection(month_ov, themes, children) : '')+
+      '</ha-card>';
+
+    this._listeners();
+  }
+
+  _renderChildToday(state) {
+    var a       = state.attributes;
+    var child   = a.child || this._config.name || "";
+    var tasks   = a.tasks_today || [];
+    var total   = a.total || 0;
+    var done    = a.done_count || 0;
+    var allDone = !!a.all_done;
+    var freeDay = !!a.free_day;
+    var present = a.present !== false;
+    var available = a.available !== false;
+    var emoji   = this._config.emoji || "⭐";
+    var accent  = this._config.color || "var(--primary-color, #1a237e)";
+    var title   = this._config.title || child;
+
+    var statusBadge = "";
+    if (!present)          statusBadge = '<span class="badge absent">🏠 Away</span>';
+    else if (!available)   statusBadge = '<span class="badge blocked">⛔ Blocked</span>';
+    else if (allDone)      statusBadge = '<span class="badge done-badge">✅ Done!</span>';
+
+    var body = "";
+    if (!present) {
+      body = '<div class="free">Not home today</div>';
+    } else if (!available) {
+      body = '<div class="free">Blocked day</div>';
+    } else if (freeDay || !tasks.length) {
+      body = '<div class="free">Free day 🎉</div>';
+    } else {
+      var groups = {rotation:[],week:[],month:[]};
+      tasks.forEach(function(t){ if(groups[t.type]) groups[t.type].push(t); else groups.rotation.push(t); });
+      var lbls = {rotation:"🔄 Daily",week:"📅 Weekly",month:"🗓️ Monthly"};
+      ["rotation","week","month"].forEach(function(type){
+        var g = groups[type];
+        if (!g.length) return;
+        body += '<div class="glbl">'+lbls[type]+'</div>';
+        g.forEach(function(t){
+          body += '<button class="tbtn tbtn-solo'+(t.done?" done":"")+'" data-key="'+t.key+'">' +
+            '<span class="ti">'+(t.icon||"✔️")+'</span>' +
+            '<span class="tn">'+t.task+swapTag(t)+'</span>' +
+            '<span class="tk">'+(t.done?"✅":"⬜")+'</span>' +
+          '</button>';
+        });
+      });
+    }
+
+    var progress = total > 0
+      ? '<div class="solo-prog"><div class="solo-prog-bar" style="width:'+Math.round(done/total*100)+'%"></div></div><div class="solo-prog-lbl">'+done+' / '+total+' done</div>'
+      : '';
+
+    this.shadowRoot.innerHTML =
+      '<style>'+this._css()+'</style>'+
+      '<ha-card>'+
+        '<div class="hdr solo-hdr" style="--accent:'+accent+'">' +
+          '<span style="font-size:32px">'+emoji+'</span>' +
+          '<div><div class="hdr-t">'+title+'</div><div class="hdr-s">Today\'s tasks'+statusBadge+'</div></div>' +
+        '</div>' +
+        progress +
+        '<div class="sec solo-body">'+body+'</div>' +
       '</ha-card>';
 
     this._listeners();
@@ -82,7 +161,7 @@ class ChoreNestCard extends HTMLElement {
           g.forEach(function(t){
             rows += '<button class="tbtn'+(t.done?" done":"")+'" data-key="'+t.key+'">' +
               '<span class="ti">'+(t.icon||"✔️")+'</span>' +
-              '<span class="tn">'+t.task+'</span>' +
+              '<span class="tn">'+t.task+swapTag(t)+'</span>' +
               '<span class="tk">'+(t.done?"✅":"⬜")+'</span>' +
             '</button>';
           });
@@ -122,8 +201,8 @@ class ChoreNestCard extends HTMLElement {
         tasks.forEach(function(t){
           var th = themes[t.child]||{bg:"#1565C0",emoji:"⭐"};
           var typeIcon = t.type==="month"?" 🗓️":t.type==="week"?" 📅":"";
-          badges += '<div class="wb tbtn'+(t.done?" done":"")+'" style="background:'+th.bg+'" data-key="'+t.key+'" title="'+t.child+': '+t.task+typeIcon+'">'+
-            th.emoji+' <span class="wn">'+t.task.split(/[\s\/]/)[0]+'</span>'+
+          badges += '<div class="wb tbtn'+(t.done?" done":"")+'" style="background:'+th.bg+'" data-key="'+t.key+'" title="'+t.child+': '+t.task+typeIcon+(t.swapped_from?' (swapped with '+t.swapped_from+')':'')+'">'+
+            th.emoji+' <span class="wn">'+t.task.split(/[\s\/]/)[0]+'</span>'+(t.swapped_from?'🔁':'')+
           '</div>';
         });
         children.forEach(function(c){
@@ -218,6 +297,7 @@ class ChoreNestCard extends HTMLElement {
     ".ti{font-size:17px;flex-shrink:0}",
     ".tn{flex:1}",
     ".tk{font-size:17px;flex-shrink:0}",
+    ".sw{font-size:11px;font-weight:600;opacity:.8;white-space:nowrap}",
     ".wk-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}",
     ".wc{border-radius:10px;border:2px solid var(--divider-color,#e0e0e0);overflow:hidden}",
     ".wc.today{border-color:#1a237e;box-shadow:0 2px 10px rgba(26,35,126,.25)}",
@@ -250,9 +330,18 @@ class ChoreNestCard extends HTMLElement {
     ".mo-cn{flex:1;font-size:14px;font-weight:600;color:var(--primary-text-color)}",
     ".mo-dt{font-size:11px;font-weight:700;color:#fff;padding:3px 8px;border-radius:10px}",
     ".mo-tk{font-size:18px;flex-shrink:0}",
+    ".solo-hdr{background:linear-gradient(135deg,var(--accent,#1a237e),var(--accent,#4527A0))}",
+    ".solo-hdr .badge{margin-left:8px}",
+    ".solo-prog{height:6px;background:var(--divider-color,#e0e0e0)}",
+    ".solo-prog-bar{height:100%;background:var(--accent,#1a237e);transition:width .2s}",
+    ".solo-prog-lbl{font-size:11px;color:var(--secondary-text-color);text-align:right;padding:4px 14px 0}",
+    ".solo-body{display:flex;flex-direction:column;gap:6px}",
+    ".tbtn-solo{background:var(--secondary-background-color,#f4f4f4);color:var(--primary-text-color);border:1px solid var(--divider-color,#e0e0e0)}",
+    ".tbtn-solo:hover{background:var(--divider-color,#e8e8e8)}",
+    ".tbtn-solo.done{opacity:.5;text-decoration:line-through;background:transparent}",
   ].join("\n"); }
 
-  getCardSize(){ return 7; }
+  getCardSize(){ return this._childMode ? 3 : 7; }
   static getConfigElement(){ return document.createElement("chorenest-card-editor"); }
   static getStubConfig(){ return {entity:"sensor.chorenest_week"}; }
 }
@@ -265,25 +354,60 @@ class ChoreNestCardEditor extends HTMLElement {
 
   setConfig(c) {
     this._config = c || {};
-    var inp = this.querySelector("#e");
-    if (inp) inp.value = this._config.entity || "sensor.chorenest_week";
+    this._fill();
+  }
+
+  _fill() {
+    var self = this;
+    ["e","t","emj","col"].forEach(function(id){
+      var inp = self.querySelector("#"+id);
+      if (!inp) return;
+      var map = {e:"entity",t:"title",emj:"emoji",col:"color"};
+      inp.value = self._config[map[id]] || "";
+    });
   }
 
   connectedCallback() {
     var e = (this._config && this._config.entity) || "sensor.chorenest_week";
     this.innerHTML =
-      '<div style="padding:16px">' +
-        '<label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Sensor entity</label>' +
-        '<input id="e" type="text" value="' + e + '" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:8px;font-size:14px">' +
-        '<p style="font-size:11px;color:#888;margin-top:4px">Default: sensor.chorenest_week</p>' +
+      '<div style="padding:16px;display:flex;flex-direction:column;gap:12px">' +
+        '<div>' +
+          '<label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Sensor entity</label>' +
+          '<input id="e" type="text" value="' + e + '" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:8px;font-size:14px">' +
+          '<p style="font-size:11px;color:#888;margin-top:4px">Use sensor.chorenest_week for the full family overview, or sensor.chorenest_&lt;name&gt; for a compact "today only" card for that one child (handy on their own dashboard page in the app).</p>' +
+        '</div>' +
+        '<div>' +
+          '<label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Title (optional, per-child card only)</label>' +
+          '<input id="t" type="text" placeholder="defaults to the child\'s name" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:8px;font-size:14px">' +
+        '</div>' +
+        '<div>' +
+          '<label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Emoji (optional, per-child card only)</label>' +
+          '<input id="emj" type="text" placeholder="⭐" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:8px;font-size:14px">' +
+        '</div>' +
+        '<div>' +
+          '<label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Accent color (optional, per-child card only)</label>' +
+          '<input id="col" type="text" placeholder="#1a237e" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:8px;font-size:14px">' +
+        '</div>' +
       '</div>';
+    this._fill();
     var self = this;
-    this.querySelector("#e").addEventListener("change", function(ev) {
+    var emit = function() {
+      var cfg = Object.assign({}, self._config, { entity: self.querySelector("#e").value.trim() });
+      var t = self.querySelector("#t").value.trim();
+      var emj = self.querySelector("#emj").value.trim();
+      var col = self.querySelector("#col").value.trim();
+      if (t) cfg.title = t; else delete cfg.title;
+      if (emj) cfg.emoji = emj; else delete cfg.emoji;
+      if (col) cfg.color = col; else delete cfg.color;
+      self._config = cfg;
       self.dispatchEvent(new CustomEvent("config-changed", {
-        detail: { config: { entity: ev.target.value.trim() } },
+        detail: { config: cfg },
         bubbles: true,
         composed: true,
       }));
+    };
+    ["e","t","emj","col"].forEach(function(id){
+      self.querySelector("#"+id).addEventListener("change", emit);
     });
   }
 }
@@ -295,12 +419,12 @@ if (!window.customCards.find(function(c){ return c.type === "chorenest-card"; })
   window.customCards.push({
     type: "chorenest-card",
     name: "ChoreNest",
-    description: "Co-parenting aware rotating/weekly/monthly chore tracker.",
+    description: "Co-parenting aware rotating/weekly/monthly chore tracker. Point at sensor.chorenest_week for the family overview, or sensor.chorenest_<name> for a compact today-only card for one child.",
     preview: true,
   });
 }
 console.info(
-  "%c CHORENEST %c v1.0 ",
+  "%c CHORENEST %c v1.2 ",
   "color:white;background:#1a237e;padding:3px 8px;border-radius:4px 0 0 4px;font-weight:700",
   "color:#1a237e;background:#fff;padding:3px 8px;border-radius:0 4px 4px 0;border:1px solid #1a237e"
 );
